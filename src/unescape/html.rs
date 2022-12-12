@@ -1,4 +1,4 @@
-use crate::unescape;
+use crate::{likely, unescape, unlikely};
 
 use super::CMARK_CTYPE_CLASS;
 
@@ -33,8 +33,8 @@ pub fn unescape_html(src: &[u8]) -> Vec<u8> {
             i += 1;
         }
 
-        if i > org {
-            if org == 0 && i >= size {
+        if likely(i > org) {
+            if unlikely(org == 0) && i >= size {
                 return src.to_vec();
             }
 
