@@ -1,0 +1,16 @@
+[package]
+name = "escapist"
+version = "0.0.1"
+authors = ["Garen J. Torikian <gjtorikian@gmail.com>"]
+edition = "2021"
+repository = "https://github.com/gjtorikian/escapist"
+keywords = ["html", "houdini", "escape", "unescape"]
+categories = ["encoding"]
+description = "This library is a minimal library for escaping HTML and href attributes; it can also unescape HTML."
+readme = "README.md"
+license = "MIT"
+include = ["src/**/*", "Cargo.toml", "README.md", "LICENSE"]
+
+
+[dependencies]
+entities = "1.0.1"
