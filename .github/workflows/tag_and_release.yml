@@ -1,0 +1,73 @@
+name: Tag and Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  release:
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      CRATES_IO_TOKEN: ${{ secrets.CRATES_IO_TOKEN }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Ruby 3.1
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 3.1
+          bundler-cache: true
+
+      - name: Install correct toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Install github_changelog_generator
+        run: |
+          bundle install github_changelog_generator
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "Actions Auto Build"
+
+      - name: Get current version
+        id: version-label
+        run: |
+          VERSION=$(grep version Cargo.toml | head -n 1 | cut -d'"' -f2)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+      - name: Create tag
+        run: |
+          git tag -a v${{ steps.version-label.outputs.version }} -m "Release v${{ steps.version-label.outputs.version }}"
+          git push origin --tags
+
+      - name: Generate CHANGELOG.md
+        id: changelog
+        run: script/generate_changelog
+
+      - name: Commit & Push Changelog
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "Actions Auto Build"
+          git add -f CHANGELOG.md
+          git commit -m "docs: update changelog" || true
+          git push
+
+      - name: Publish release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create v${{ steps.version-label.outputs.version }} --generate-notes
+
+      - name: Run cargo check
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+      - name: Login crates.io
+        run: cargo login ${CRATES_IO_TOKEN}
+
+      - run: cargo publish
