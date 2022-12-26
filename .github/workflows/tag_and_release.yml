@@ -26,7 +26,7 @@ jobs:
 
       - name: Install github_changelog_generator
         run: |
-          bundle install github_changelog_generator
+          gem install github_changelog_generator
 
       - name: Configure Git
         run: |
