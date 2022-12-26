@@ -18,11 +18,8 @@ jobs:
           ruby-version: 3.1
           bundler-cache: true
 
-      - name: Install correct toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
+      - name: Install toolchain
+        uses: dtolnay/rust-toolchain@stable
 
       - name: Install github_changelog_generator
         run: |
